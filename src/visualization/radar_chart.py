@@ -10,7 +10,7 @@ from matplotlib.transforms import Affine2D
 from matplotlib.lines import Line2D
 
 
-def radial_chart(data, spoke_labels, labels, colors, markers, title):
+def radial_chart(data, spoke_labels, labels, colors, markers, title, save=None):
     N = len(spoke_labels)
     theta = radar_factory(N, frame='polygon')
 
@@ -66,6 +66,9 @@ def radial_chart(data, spoke_labels, labels, colors, markers, title):
              size='large')
 
     plt.show()
+    if save is not None:
+        plt.savefig(save)
+
 
 def radar_factory(num_vars, frame='circle'):
     """
