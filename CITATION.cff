@@ -11,7 +11,7 @@ title: "Pigment retrieval from radiometry with machine learning"
 version: 1.0.0
 doi: 10.5281/zenodo.1234
 date-released: 2022-09-29
-url: "https://github.com/Kissyfur/dsngd"
+url: "https://github.com/Kissyfur/pigment-retrieval-from-olci"
 preferred-citation:
   type: article
   authors:
@@ -27,6 +27,6 @@ preferred-citation:
     given-names: "Emanuele"
   doi: "10.0000/00000"
   journal: "pending"
-  month: pending
+  month: "pending"
   title: "Pigment retrieval from radiometry with machine learning"
   year: 2021
