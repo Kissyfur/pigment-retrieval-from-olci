@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Sanchez-Lopez"
+  given-names: "Borja"
+- family-names: " Cerquides"
+  given-names: "Jesus"
+- family-names: " Talone"
+  given-names: "Marco"
+title: "Pigment retrieval from radiometry with machine learning"
+version: 1.0.0
+doi: 10.5281/zenodo.1234
+date-released: 2022-09-29
+url: "https://github.com/Kissyfur/dsngd"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Sanchez-Lopez"
+    given-names: "Borja"
+  - family-names: " Cerquides"
+    given-names: "Jesus"
+  - family-names: " Talone"
+    given-names: "Marco"
+  - family-names: " Di Cicco"
+    given-names: "Annalisa"
+  - family-names: " Organelli"
+    given-names: "Emanuele"
+  doi: "10.0000/00000"
+  journal: "pending"
+  month: pending
+  title: "Pigment retrieval from radiometry with machine learning"
+  year: 2021
