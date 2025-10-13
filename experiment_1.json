@@ -1,0 +1,16 @@
+{
+  "EXP_NAME": "13_wl",
+  "N": 6,
+  "R": 42,
+  "INP_PATH": "data/datasets/dataset_hplc_multi/log_rrs_lat_lon_month_season_depth_loc.csv",
+  "OUT_PATH": "data/datasets/dataset_hplc_multi/log_pigments.csv",
+  "INP_VARS" : ["400", "412", "442", "490", "510", "560", "620", "665", "673", "681", "708", "778", "865"],
+  "OUT_VARS" : ["chlide_a[mg*m^3]", "chla[mg*m^3]", "chlb[mg*m^3]", "chlc1+c2[mg*m^3]",
+    "fucox[mg*m^3]", "19'hxfcx[mg*m^3]", "19'btfcx[mg*m^3]",
+    "diadino[mg*m^3]", "allox[mg*m^3]", "diatox[mg*m^3]", "zeaxan[mg*m^3]",
+    "beta_car[mg*m^3]", "peridinin[mg*m^3]"],
+  "OUT_VARS_SHORT": ["chlid", "chl_a", "chl_b", "chc12", "fucox", "hxfcx", "btfcx", "diadi", "allox", "diato", "zeaxa", "betac", "perid"],
+  "CLUSTERS": 15,
+  "TEST_SIZE": 0.15,
+  "MODEL_NAMES": ["cnn", "dnn", "rf", "xgb"]
+}
