@@ -7,26 +7,8 @@ authors:
   given-names: "Jesus"
 - family-names: " Talone"
   given-names: "Marco"
-title: "Pigment retrieval from radiometry with machine learning"
+title: "pigment-retrieval-from-olci"
 version: 1.0.0
 doi: 10.5281/zenodo.1234
-date-released: 2022-09-29
+date-released: 2025-10-13
 url: "https://github.com/Kissyfur/pigment-retrieval-from-olci"
-preferred-citation:
-  type: article
-  authors:
-  - family-names: "Sanchez-Lopez"
-    given-names: "Borja"
-  - family-names: " Cerquides"
-    given-names: "Jesus"
-  - family-names: " Talone"
-    given-names: "Marco"
-  - family-names: " Di Cicco"
-    given-names: "Annalisa"
-  - family-names: " Organelli"
-    given-names: "Emanuele"
-  doi: "10.0000/00000"
-  journal: "pending"
-  month: "pending"
-  title: "Pigment retrieval from radiometry with machine learning"
-  year: 2021
