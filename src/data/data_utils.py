@@ -70,39 +70,8 @@ def fill_random_2d(arr, percent):
     arr_c[random_coords[:, 0], random_coords[:, 1]] = np.random.randint(-1, 50, len(random_coords))
     return arr_c
 
-
-# def augment_data(x_train, y_train, replicate=10):
-#     x_aug = pd.DataFrame(x_train.values.repeat(replicate, axis=0), columns=x_train.columns)
-#     y_aug = pd.DataFrame(y_train.values.repeat(replicate, axis=0), columns=y_train.columns)
-#
-#     n = x_aug.shape[0]
-#
-#     # transformations:
-#     std_dev = 2.5 / 100
-#     # std_dev = 5. / 100
-#     x_noise = np.random.normal(1, std_dev, x_aug.shape)
-#     x_scale_factor = np.random.normal(1, std_dev, (n, 1))
-#
-#     y_noise = np.random.normal(1, std_dev, y_aug.shape)
-#
-#     mixing_factor = np.random.uniform(0.9, 1., (n, 1))
-#     mixing_indices = np.random.choice(range(n), n)
-#
-#     # Apply transformations:
-#     x_aug.loc[:] = mixing_factor * x_aug.values + (1 - mixing_factor) * x_aug.loc[mixing_indices].values
-#     y_aug.loc[:] = mixing_factor * y_aug.values + (1 - mixing_factor) * y_aug.loc[mixing_indices].values
-#
-#     x_aug *= x_noise
-#     x_aug *= x_scale_factor
-#
-#     y_aug *= y_noise
-#     return pd.concat([x_train, x_aug], ignore_index=True), pd.concat([y_train, y_aug], ignore_index=True)
-
-
 def augment_data(x_train, y_train, replicate=10, seed=42):
     np.random.seed(seed)
-    # x_aug = pd.DataFrame(x_train.values.repeat(replicate, axis=0), columns=x_train.columns)
-    # y_aug = pd.DataFrame(y_train.values.repeat(replicate, axis=0), columns=y_train.columns)
     x_aug = np.repeat(x_train.values, replicate, axis=0)
     y_aug = np.repeat(y_train.values, replicate, axis=0)
     n = x_aug.shape[0]
@@ -110,11 +79,6 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     # transformations:
     std_dev_x = 5 / 100
     std_dev_y = 18 / 100
-    # std_dev = 5. / 100
-    #  = np.random.normal(1, std_dev, x_aug.shape)
-    #  = np.random.normal(1, std_dev, (n, 1))
-
-    # y_noise = np.random.normal(1, std_dev, y_aug.shape)
 
     mixing_factor = np.random.uniform(0.9, 1., (n, 1))
     mixing_indices = np.random.choice(n, n)
@@ -123,18 +87,10 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     x_aug = mixing_factor * x_aug + (1 - mixing_factor) * x_aug[mixing_indices]
     y_aug = mixing_factor * y_aug + (1 - mixing_factor) * y_aug[mixing_indices]
 
-    # Add independent Gaussian noise per wavelength (feature)
+    # Add independent Gaussian noise per feature
     x_aug += np.random.normal(0.0, std_dev_x, x_aug.shape)
-
-    # Add global Gaussian noise per sample (shifts all wavelengths equally)
-    # x_aug += np.random.normal(0.0, std_dev,  (n, 1))
-
-    # x_aug *= x_scale_factor
-
-    # y_aug *= y_noise
     y_aug += np.random.normal(0.0, std_dev_y, y_aug.shape)
 
-    # return pd.concat([x_train, x_aug], ignore_index=True), pd.concat([y_train, y_aug], ignore_index=True)
     return (
         pd.DataFrame(np.vstack([x_train.values, x_aug]), columns=x_train.columns),
         pd.DataFrame(np.vstack([y_train.values, y_aug]), columns=y_train.columns)
