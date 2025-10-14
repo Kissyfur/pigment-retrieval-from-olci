@@ -3,6 +3,7 @@ import numpy as np
 import itertools
 import pandas as pd
 
+from pathlib import Path
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -27,18 +28,18 @@ def transform_x(x_train, x_test, transformation):
 
 
 def stratified_kfold_multidim_kmeans(x, y, n_splits=10, clusters=10, random_state=42):
-    kmeans = KMeans(n_clusters=clusters, random_state=42)
+    kmeans = KMeans(n_clusters=clusters, random_state=random_state)
     clusters = kmeans.fit_predict(y)
 
     split = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
     return split.split(x, clusters)
 
 
-def stratified_split_multidim_kmeans(x, y, clusters=10, test_size=0.2, random_state=42):
-    kmeans = KMeans(n_clusters=clusters, random_state=42)
+def stratified_split_multidim_kmeans(x, y, n_splits=1, clusters=10, test_size=0.2, random_state=42):
+    kmeans = KMeans(n_clusters=clusters, random_state=random_state)
     clusters = kmeans.fit_predict(y)
 
-    split = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+    split = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=random_state)
     return split.split(x, clusters)
 
 
@@ -107,7 +108,8 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     n = x_aug.shape[0]
 
     # transformations:
-    std_dev = 2.5 / 100
+    std_dev_x = 5 / 100
+    std_dev_y = 18 / 100
     # std_dev = 5. / 100
     #  = np.random.normal(1, std_dev, x_aug.shape)
     #  = np.random.normal(1, std_dev, (n, 1))
@@ -122,15 +124,15 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     y_aug = mixing_factor * y_aug + (1 - mixing_factor) * y_aug[mixing_indices]
 
     # Add independent Gaussian noise per wavelength (feature)
-    x_aug += np.random.normal(0.0, std_dev, x_aug.shape)
+    x_aug += np.random.normal(0.0, std_dev_x, x_aug.shape)
 
     # Add global Gaussian noise per sample (shifts all wavelengths equally)
-    x_aug += np.random.normal(0.0, std_dev,  (n, 1))
+    # x_aug += np.random.normal(0.0, std_dev,  (n, 1))
 
     # x_aug *= x_scale_factor
 
     # y_aug *= y_noise
-    y_aug += np.random.normal(0.0, std_dev, y_aug.shape)
+    y_aug += np.random.normal(0.0, std_dev_y, y_aug.shape)
 
     # return pd.concat([x_train, x_aug], ignore_index=True), pd.concat([y_train, y_aug], ignore_index=True)
     return (
@@ -155,4 +157,3 @@ def inverse_transform(py_transformed, y_var, model_path):
         return np.exp(py_transformed) # - 0.001
     else:
         return py_transformed
-

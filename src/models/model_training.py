@@ -19,13 +19,14 @@ def train_model(model, hyperparams_space, x, y, path_save_model, repetitions=100
 def train_modules(mod, hyperparams_space, x, y, path_save_modules, repetitions=100):
     hps = []
     x_aug, y_aug = augment_data(x, y, replicate=repetitions)
-    for col_name in tqdm(y.columns):
+    for col_name in tqdm(y.columns,  leave=False):
         module = mod.__class__(f"{mod.name}_{col_name}")
-        hp = module.hyperparameter_search(hyperparams_space=hyperparams_space, x=x, y=y[[col_name]], inner_splits=1,
-                                          r=42, repetitions=repetitions, patience=4)
-        hps.append(hp)
+        hp, loss = module.hyperparameter_search(hyperparams_space=hyperparams_space, x=x, y=y[[col_name]], inner_splits=1,
+                                                r=42, repetitions=repetitions, patience=10)
         module.build_model(**hp)
         module.fit(x_aug, y_aug[[col_name]], **hp)
         module.save(path_save_modules)
+        hp.update({'val_loss': loss})
+        hps.append(hp)
     pd.DataFrame(hps, index=y.columns).to_csv(path_save_modules + f'/{mod.name}_best_hyperparam.csv')
 

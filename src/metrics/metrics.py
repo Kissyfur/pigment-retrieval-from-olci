@@ -29,7 +29,7 @@ def exponential_r2(y, py):
 
 # return list(mean_absolute_error(y, py, multioutput='raw_values'))
 
-def r2(y, py):
+def custom_r2(y, py):
     if np.any(np.isnan(py)) or np.any(np.isinf(py)):
         return -999
     return r2_score(y, py)
@@ -43,6 +43,14 @@ def exponential_mape(y, py):
     return mean_absolute_percentage_error(y, py)
 
 
+def exponential_mpe(y, py):
+    if np.any(np.isnan(py)) or np.any(np.isinf(py)):
+        return 500
+    y = np.exp(y)
+    py = np.exp(py)
+    return np.mean((y - py)/y)
+
+
 def exponential_mae(y, py):
     if np.any(np.isnan(py)) or np.any(np.isinf(py)):
         print("NaN in py")
@@ -52,12 +60,21 @@ def exponential_mae(y, py):
     return mean_absolute_error(y, py)
 
 
-def exponential_mse(y, py):
+def exponential_me(y, py):
     if np.any(np.isnan(py)) or np.any(np.isinf(py)):
         print("NaN in py")
         return 500
     y = np.exp(y)
     py = np.exp(py)
+    return np.mean(y - py)
+
+
+def custom_mse(y, py):
+    if np.any(np.isnan(py)) or np.any(np.isinf(py)):
+        print("NaN in py")
+        return 500
+    # y = np.exp(y)
+    # py = np.exp(py)
     return mean_squared_error(y, py)
 
 
@@ -66,11 +83,14 @@ def mae_mse_loss(y, py):
 
 
 class Metrics:
-    M_FUNCTIONS = {"R2": r2_score,
-                   "MAPE": exponential_mape,
-                   "MAE": exponential_mae,
-                   "MSE": exponential_mse,
-                   }
+    M_FUNCTIONS = {
+        "MSE": custom_mse,
+        "R2": r2_score,
+        "MAPE": exponential_mape,
+        "MAE": exponential_mae,
+        "MPE": exponential_mpe,
+        "ME": exponential_me
+    }
     MET_NAMES = M_FUNCTIONS.keys()
 
     def __init__(self, met_names=MET_NAMES):
@@ -91,11 +111,3 @@ class Metrics:
                 continue
             mets.append({met_name: met(t, p) for met_name, met in self.metrics.items()})
         return mets
-
-def my_r2_score(ty, py):
-    dim_y = ty.shape[1]
-
-    for i in range(dim_y):
-        t, p = 6
-    r2_score
-
