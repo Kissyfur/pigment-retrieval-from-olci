@@ -21,7 +21,7 @@ class RandomForestModel(BaseModel):
             pickle.dump(self.model, f)
 
     def fit(self, x, y, **kwargs):
-        self.model.fit(x, y)
+        return self.model.fit(x, y)
 
     def load_model(self, p):
         p = p.with_suffix('.pkl')
@@ -31,7 +31,7 @@ class RandomForestModel(BaseModel):
     def hyperparameter_search(self, hyperparams_space, x, y, n_iter=50, random_state=42,
                               inner_splits=3, repetitions=100, **kwargs):
         model = self.model_factory(random_state=random_state)
-        x, y = augment_data(x, y, replicate=repetitions)
+        # x, y = augment_data(x, y, replicate=repetitions)
 
         randomized_search = RandomizedSearchCV(
             estimator=model, param_distributions=hyperparams_space, n_iter=n_iter,
@@ -43,6 +43,9 @@ class RandomForestModel(BaseModel):
 class XGBModel(RandomForestModel):
     def __init__(self, name='xgb'):
         super().__init__(name=name)
+
+    def fit(self, x, y, eval_set=None, **kwargs):
+        return self.model.fit(x, y, eval_set=eval_set)
 
     def model_factory(self, **kwargs):
         model = xgb.XGBRegressor(**kwargs)

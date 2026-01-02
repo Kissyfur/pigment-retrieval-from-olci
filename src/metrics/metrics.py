@@ -48,7 +48,7 @@ def exponential_mpe(y, py):
         return 500
     y = np.exp(y)
     py = np.exp(py)
-    return np.mean((y - py)/y)
+    return np.mean((py - y)/y)
 
 
 def exponential_mae(y, py):
@@ -66,7 +66,7 @@ def exponential_me(y, py):
         return 500
     y = np.exp(y)
     py = np.exp(py)
-    return np.mean(y - py)
+    return np.mean(py - y)
 
 
 def custom_mse(y, py):

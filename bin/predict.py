@@ -5,59 +5,60 @@ import pickle
 import numpy as np
 
 from pathlib import Path
-
+from src.models.keras_models import ConcatenatedModulesModel
+from src.models.sklearn_models import RandomForestModel, XGBModel
 
 logging.basicConfig(level=logging.INFO)
-output_labels = ['chlide_a[mg*m^3]', 'chla[mg*m^3]', 'chlb[mg*m^3]', 'chlc1+c2[mg*m^3]',
-       'fucox[mg*m^3]', "19'hxfcx[mg*m^3]", "19'btfcx[mg*m^3]",
-       'diadino[mg*m^3]', 'allox[mg*m^3]', 'diatox[mg*m^3]', 'zeaxan[mg*m^3]',
-       'beta_car[mg*m^3]', 'peridinin[mg*m^3]']
-dir_model       = Path('model')
+output_labels = ["chlid", "chl_a", "chl_b", "chc12", "fucox", "hxfcx", "btfcx", "diadi", "allox", "diato", "zeaxa",
+                   "betac", "perid"]
+input_labels = ["400", "412", "442", "490", "510", "560", "620", "665", "673", "681", "708", "778", "865"]
+
 dir_predictions = Path('data/predictions')
 dir_predictions.mkdir(parents=True, exist_ok=True)
+
+
+class_instance = {'rf': RandomForestModel('rf'),
+                  'xgb': XGBModel('xgb'),
+                  'cnn': ConcatenatedModulesModel('concatenatedCNN'),
+                  'dnn': ConcatenatedModulesModel('concatenatedDNN'),
+                  'bilstm': ConcatenatedModulesModel('concatenatedBiLSTM')
+                  }
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='predict pigments from radiometry')
     parser.add_argument('--path_data', metavar='p', type=str, help='path to data', required=True)
     parser.add_argument('--fn_save', metavar='f', type=str,
                         help='filename for saving file with predictions (.csv extension)', default='tmp')
-    parser.add_argument('--model', default='xgb', const='xgb', nargs='?',
-                        choices=['xgb', 'rf', 'random_forest', 'xgboost', 'dnn', 'dense_neural_network'])
-    parser.add_argument('--legacy', metavar='l', type=bool, help='legacy input data', default=True)
+    parser.add_argument('--model', default='cnn', const='xgb', nargs='?',
+                        choices=['xgb', 'rf', 'random_forest', 'xgboost', 'bilstm', 'dnn', 'cnn'])
+    parser.add_argument('--exp_name', metavar='l', type=str, help='experiment name',
+                        default='experiments/13_wl_final')
 
-    args       = parser.parse_args()
-    path_data  = args.path_data
-    fn_save    = args.fn_save + '.csv'
-    model_name = args.model
-    legacy     = args.legacy
+    args = parser.parse_args()
+    path_data = args.path_data
+    fn = args.fn_save + '.csv'
+    mn = args.model
+    en = args.exp_name
 
-    if path_data[-4:] != '.csv':
-        logging.info(f'File {path_data} is not a ".csv" file')
-        exit()
-    data = pd.read_csv(path_data, index_col=0)
+    models = {}
+    scalers = {}
+    data = pd.read_csv(path_data, index_col=0)[input_labels]
+    n = len(list(Path(en).iterdir()))
+    pys = {}
 
-    if model_name in ["rf", "random_forest"]:
-        model_path = dir_model / 'rf_legacy.pkl' if legacy else dir_model / 'rf.pkl'
+    for split in range(n):
+        with open(f'{en}/split_{split}/scaler_y.pkl', 'rb') as f:
+            loaded_scaler = pickle.load(f)
+        scalers[split] = loaded_scaler
+        path_model = f'{en}/split_{split}/models'
+        mod_ = class_instance[mn]
+        mod_.load(path_model)
+        py = pd.DataFrame(loaded_scaler.inverse_transform(mod_.predict(data)), columns=output_labels,
+                          index=data.index)
+        pys[split] = py
+        py.to_csv(dir_predictions/f'{mod_.name}_split_{split}_{fn}')
 
-    elif model_name in ["xgb", "xgboost"]:
-        model_path = dir_model / 'xgb_legacy.pkl' if legacy else dir_model / 'xgb.pkl'
-
-    elif model_name in ["dnn", "dense_neural_network"]:
-        model_path = dir_model / 'dnn_legacy.pkl' if legacy else dir_model / 'dnn.pkl'
-
-    else:
-        logging.info(f'Model "{model_name}" not valid')
-        exit()
-
-    logging.info(f'Loading model in {model_path}   ...')
-    with open(model_path, 'rb') as f:
-        model = pickle.load(f)
-
-    logging.info(f'Predicting pigments   ...')
-    py = np.exp(model.predict(data))
-
-    df = pd.DataFrame(py, columns=output_labels)
-    df['lat'] = data['lat']
-    df['lon'] = data['lon']
-    logging.info(f'Saving predictions in {dir_predictions/fn_save}   ...')
-    df.to_csv(dir_predictions/fn_save)
+    final_py = np.mean([py_ for py_ in pys.values()], axis=0)
+    final_py = pd.DataFrame(final_py, columns=output_labels, index=data.index)
+    final_py.to_csv(dir_predictions/f'{mod_.name}_{fn}')

@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import itertools
 import pandas as pd
+import xarray as xr
 
 from pathlib import Path
 from sklearn.cluster import KMeans
@@ -10,9 +11,18 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 
 
-def to_dataframe_lat_lon(x_ar):
-    return  x_ar.to_dataframe().reset_index()
+def to_xarray_dims(df, dims):
+    # Set the multi-index for xarray
+    df = df.set_index(dims)
+    # Convert to xarray
+    return df.to_xarray()
 
+
+def to_dataframe_lat_lon(x_ar, dims):
+    x_aux = x_ar.reset_coords(dims)
+    dims_aux = [dim + '_dim' for dim in dims]
+    x_aux = x_aux.rename_dims(dict(zip(dims, dims_aux)))
+    return x_aux.to_dataframe().reset_index()
 
 def transform_x(x_train, x_test, transformation):
     if "scaled" in transformation:
@@ -70,6 +80,7 @@ def fill_random_2d(arr, percent):
     arr_c[random_coords[:, 0], random_coords[:, 1]] = np.random.randint(-1, 50, len(random_coords))
     return arr_c
 
+
 def augment_data(x_train, y_train, replicate=10, seed=42):
     np.random.seed(seed)
     x_aug = np.repeat(x_train.values, replicate, axis=0)
@@ -92,9 +103,74 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     y_aug += np.random.normal(0.0, std_dev_y, y_aug.shape)
 
     return (
-        pd.DataFrame(np.vstack([x_train.values, x_aug]), columns=x_train.columns),
-        pd.DataFrame(np.vstack([y_train.values, y_aug]), columns=y_train.columns)
+     pd.DataFrame(np.vstack([x_train.values, x_aug]), columns=x_train.columns),
+     pd.DataFrame(np.vstack([y_train.values, y_aug]), columns=y_train.columns)
     )
+
+
+def replicate_data(darr, dim='Id', replicate=10):
+    return xr.concat([darr] * replicate, dim=dim)
+
+
+def apply_multiplicative_noise(darr, std=0.1, std_dims=None, seed=42):
+    return apply_noise(darr, std, std_dims, seed, add=False)
+
+
+def apply_additive_noise(darr, std=0.1, std_dims=None, seed=42):
+    return apply_noise(darr, std, std_dims, seed, add=True)
+
+
+def apply_noise(darr, std=0.1, std_dims=None, seed=42, add=True):
+    if std_dims is None:
+        return darr
+    np.random.seed(seed)
+    # Add independent Gaussian noise per feature
+    x_dim_sizes = tuple(darr.sizes[d] for d in std_dims)
+    if add:
+        noise_x = np.random.normal(0.0, std, size=x_dim_sizes)
+        noise_x = xr.DataArray(noise_x, dims=std_dims)
+        return darr + noise_x
+    else:
+        noise_x = np.random.normal(1.0, std, size=x_dim_sizes)
+        noise_x = xr.DataArray(noise_x, dims=std_dims)
+        return darr * noise_x
+
+
+# def augment_data(x, y, repetitions, std_x, std_dims_x, std_y, std_dims_y):
+    # replicate_data
+#    x_aug = replicate_data(x, dim='Id', replicate=repetitions)
+#    y_aug = replicate_data(y, dim='Id', replicate=repetitions)
+
+    # apply noise
+#    y_aug = apply_additive_noise(y_aug, std=std_y, std_dims=std_dims_y)
+#    x_aug = apply_additive_noise(x_aug, std=std_x, std_dims=std_dims_x)
+
+#     return xr.concat([x, x_aug], dim='Id'), xr.concat([y, y_aug], dim='Id')
+
+def standardize_data(x_train, x_test, dims=('Id', 'lat', 'lon', 'time')):
+    # standardize
+    mean = x_train.mean(dim=dims)
+    std  = x_train.std(dim=dims)
+
+    x_train = (x_train - mean) / std
+    x_test  = (x_test - mean) / std
+    return x_train, x_test
+
+
+def random_paired_combinations(darr_1, darr_2, dim='Id', factor=0.9, seed=42):
+    np.random.seed(seed)
+    n = len(darr_1[dim].values)
+
+    mixing_factor = np.random.uniform(factor, 1., n)
+    mixing_factor = xr.DataArray(mixing_factor, dims=dim)
+    mixing_indices = np.random.choice(n, n)
+
+    # Apply transformations:
+    darr_1 = mixing_factor * darr_1 + ((1 - mixing_factor) * darr_1.isel(Id=mixing_indices)).values
+    darr_2 = mixing_factor * darr_2 + ((1 - mixing_factor) * darr_2.isel(Id=mixing_indices)).values
+
+    return darr_1, darr_2
+
 
 def inverse_transform(py_transformed, y_var, model_path):
     path_transf = model_path / "data_transformations"
@@ -113,3 +189,5 @@ def inverse_transform(py_transformed, y_var, model_path):
         return np.exp(py_transformed) # - 0.001
     else:
         return py_transformed
+
+
