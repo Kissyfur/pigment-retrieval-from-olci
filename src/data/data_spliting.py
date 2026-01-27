@@ -15,13 +15,35 @@ def load_split(path_splits, split):
     return train, test
 
 
+def get_scaler(splits_folder, split):
+    with open(f'{splits_folder}/split_{split}/scaler_y.pkl', 'rb') as f:
+        return pickle.load(f)
+
+
+def load_data_split(x, y, splits_folder, split, transform=True):
+    train_ids, test_ids = load_split(splits_folder, split)
+    x_train, y_train = x.iloc[train_ids].copy(), y.iloc[train_ids].copy()
+    loaded_scaler = get_scaler(splits_folder, split)
+    if transform:
+        y_train = pd.DataFrame(loaded_scaler.transform(y_train), columns=y_train.columns)
+    x_test, y_test = None, None
+    if test_ids is not None:
+        x_test, y_test = x.iloc[test_ids].copy(), y.iloc[test_ids].copy()
+    # print(y_train)
+    # print(y_test)
+    return x_train, y_train, x_test, y_test
+
+
 def create_splits(x, y, n_splits=6, clusters=15, test_size=0.15, r=42, path_save_splits=None):
     # legacy version
     root_p = Path(path_save_splits)
     root_p.mkdir(parents=True, exist_ok=True)
 
-    split = stratified_split_multidim_kmeans(x, y, n_splits=n_splits, clusters=clusters, test_size=test_size,
-                                             random_state=r)
+    if test_size == 0:
+        split = [(range(len(x)), None)]
+    else:
+        split = stratified_split_multidim_kmeans(x, y, n_splits=n_splits, clusters=clusters, test_size=test_size,
+                                                 random_state=r)
 
     for i, (id_train, id_test) in enumerate(split):
         # x_train, y_train = x.iloc[id_train, :].copy(), y.iloc[id_train, :].copy()

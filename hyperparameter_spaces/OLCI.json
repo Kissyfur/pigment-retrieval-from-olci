@@ -1,8 +1,8 @@
 {
   "dnn": [
-    {"dims": [4, 2], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "s", "loss":"mse"},
-    {"dims": [8, 4, 2], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "m", "loss":"mse"},
-    {"dims": [8, 8, 4, 2], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "l", "loss":"mse"}
+    {"dims": [4, 4], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "s", "loss":"mse"},
+    {"dims": [4, 4, 4], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "m", "loss":"mse"},
+    {"dims": [4, 4, 4, 4], "output_dim": 1, "dropout": 0.1, "reg_factor": 0.01, "name": "l", "loss":"mse"}
     ],
   "cnn": [
     {"dims": [4, 4, 4], "kernel_sizes":[3, 5, 7], "output_dim": 1, "dropout": 0.0, "reg_factor": 0.01, "name": "s", "loss":"mse"},
@@ -36,7 +36,22 @@
     "booster": ["gbtree"],
     "tree_method": ["auto"]
   },
-  "concatenatedModel": [
-    {"modules_path": [], "reg_factor": 0.01, "name": "cm", "epochs":  100}
+  "concatenatedCNN": [
+    {
+      "root_path": "experiments/OLCI_sat_preft/",
+      "modules_path": [
+        "cnn_chlid.h5",
+        "cnn_chl_a.h5",
+        "cnn_chl_b.h5",
+        "cnn_chc12.h5",
+        "cnn_fucox.h5",
+        "cnn_hxfcx.h5",
+        "cnn_btfcx.h5",
+        "cnn_diadi.h5",
+        "cnn_allox.h5",
+        "cnn_diato.h5",
+        "cnn_zeaxa.h5",
+        "cnn_perid.h5"],
+        "reg_factor": 0.01, "name": "cm", "epochs":  200}
   ]
 }

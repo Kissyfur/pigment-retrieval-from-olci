@@ -47,6 +47,7 @@ def stratified_kfold_multidim_kmeans(x, y, n_splits=10, clusters=10, random_stat
 
 def stratified_split_multidim_kmeans(x, y, n_splits=1, clusters=10, test_size=0.2, random_state=42):
     kmeans = KMeans(n_clusters=clusters, random_state=random_state)
+    y = y.fillna(y.mean(axis=0)).copy()
     clusters = kmeans.fit_predict(y)
 
     split = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=random_state)
@@ -81,15 +82,11 @@ def fill_random_2d(arr, percent):
     return arr_c
 
 
-def augment_data(x_train, y_train, replicate=10, seed=42):
+def augment_data(x_train, y_train, std_x, std_y, replicate=10, seed=42):
     np.random.seed(seed)
     x_aug = np.repeat(x_train.values, replicate, axis=0)
     y_aug = np.repeat(y_train.values, replicate, axis=0)
     n = x_aug.shape[0]
-
-    # transformations:
-    std_dev_x = 5 / 100
-    std_dev_y = 18 / 100
 
     mixing_factor = np.random.uniform(0.9, 1., (n, 1))
     mixing_indices = np.random.choice(n, n)
@@ -99,8 +96,8 @@ def augment_data(x_train, y_train, replicate=10, seed=42):
     y_aug = mixing_factor * y_aug + (1 - mixing_factor) * y_aug[mixing_indices]
 
     # Add independent Gaussian noise per feature
-    x_aug += np.random.normal(0.0, std_dev_x, x_aug.shape)
-    y_aug += np.random.normal(0.0, std_dev_y, y_aug.shape)
+    x_aug += np.random.normal(0.0, std_x, x_aug.shape)
+    y_aug += np.random.normal(0.0, std_y, y_aug.shape)
 
     return (
      pd.DataFrame(np.vstack([x_train.values, x_aug]), columns=x_train.columns),

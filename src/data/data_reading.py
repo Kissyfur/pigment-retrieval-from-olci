@@ -83,7 +83,7 @@ def TRS_common_read_Q(fname):
     elif 'RRS00_M02[sr^-1]' in xar:
         xar = xar.rename({'RRS00_M02[sr^-1]': 'rrs'})
         xar['rrs'] = xar['rrs'] / 100
-    xar = xar.rename({'latitude_deg_': 'lat', 'longitude_deg_': 'lon'})
+    xar = xar.rename({'latitude_deg_': 'lat', 'longitude_deg_': 'lon', 'sampling_date': 'time'})
     return xar
 
 
