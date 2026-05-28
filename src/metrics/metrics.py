@@ -69,13 +69,13 @@ def exponential_me(y, py):
     return np.mean(py - y)
 
 
-def custom_mse(y, py):
+def custom_mse(y, py, log_base_factor=np.log10(np.e)**2):
     if np.any(np.isnan(py)) or np.any(np.isinf(py)):
         print("NaN in py")
         return 500
     # y = np.exp(y)
     # py = np.exp(py)
-    return mean_squared_error(y, py)
+    return mean_squared_error(y, py) * log_base_factor
 
 
 def mae_mse_loss(y, py):

@@ -1,0 +1,60 @@
+{
+  "dnn": [
+    {"dims": [4, 4], "dropout": 0.1, "reg_factor": 0.01, "name": "s", "loss":"masked_mse"},
+    {"dims": [4, 4, 4], "dropout": 0.1, "reg_factor": 0.01, "name": "m", "loss":"masked_mse"},
+    {"dims": [4, 4, 4, 4], "dropout": 0.1, "reg_factor": 0.01, "name": "l", "loss":"masked_mse"}
+    ],
+  "cnn": [
+    {"dims": [4, 4, 4], "kernel_sizes":[3, 5, 7], "dropout": 0.0, "reg_factor": 0.01, "name": "s", "loss":"masked_mse"},
+    {"dims": [4, 4, 4, 4], "kernel_sizes":[3, 5, 7, 9], "dropout": 0.0, "reg_factor": 0.01, "name": "m", "loss":"masked_mse"},
+    {"dims": [4, 4, 4, 4, 4], "kernel_sizes":[3, 5, 7, 9, 11], "dropout": 0.0, "reg_factor": 0.01, "name": "l", "loss":"masked_mse"}
+  ],
+  "bilstm": [
+    {"dims": [2], "dropout": 0.1, "reg_factor": 0.01, "name": "s", "loss":"masked_mse"},
+    {"dims": [4, 2], "dropout": 0.1, "reg_factor": 0.01, "name": "m", "loss":"masked_mse"},
+    {"dims": [4, 4, 2], "dropout": 0.1, "reg_factor": 0.01, "name": "l", "loss":"masked_mse"}
+  ],
+  "rf": {
+    "n_estimators": [80, 100, 150, 200, 250],
+    "max_depth": [3, 5, 7],
+    "min_samples_split": [2, 3, 5],
+    "min_samples_leaf": [1, 2, 3],
+    "max_features": ["sqrt", "log2", 1],    
+    "bootstrap": [true, false]
+  },
+
+  "xgb": {
+    "n_estimators": [100, 150, 200, 250],
+    "max_depth": [3, 4, 5, 6],                  
+    "eta": [0.025, 0.05, 0.1],              
+    "colsample_bytree": [0.6, 0.75, 0.8],       
+    "min_child_weight": [4, 5, 6],               
+    "subsample": [0.5, 0.6, 0.75],               
+    "gamma": [0.5, 0.7],             
+    "lambda": [1, 2],   
+    "alpha": [0.5, 1.0],              
+    "booster": ["gbtree"],
+    "tree_method": ["auto"]
+  },
+  "concatenatedCNN": [
+    {
+      "root_path": "experiments/OLCI_sat_preft/",
+      "modules_names": [
+        "cnn_chlid.h5",
+        "cnn_chl_a.h5",
+        "cnn_chl_b.h5",
+        "cnn_chc12.h5",
+        "cnn_fucox.h5",
+        "cnn_hxfcx.h5",
+        "cnn_btfcx.h5",
+        "cnn_diadi.h5",
+        "cnn_allox.h5",
+        "cnn_diato.h5",
+        "cnn_zeaxa.h5",
+        "cnn_perid.h5"],
+      "modules_path": [], "reg_factor": 0.01, "name": "cm", "epochs":  300, "loss": "masked_mse", "warm_up": false,
+      "restart": true,
+      "learning_rate": 0.0001
+    }
+  ]
+}

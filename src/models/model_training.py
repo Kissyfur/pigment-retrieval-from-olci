@@ -21,9 +21,13 @@ def class_instance_factory(model_name):
         print(f"Class {model_name} not implemented")
         return None
 
+
 def train_model(model, hyperparams_space, x, y, path_save_model, repetitions=100, std_x=0.05, std_y=0.18, cb=None):
     x_aug, y_aug = augment_data(x, y, replicate=repetitions, std_x=std_x, std_y=std_y)
-    hp, loss = model.hyperparameter_search(hyperparams_space, x_aug, y_aug, r=42, repetitions=repetitions, patience=1)
+    if len(hyperparams_space) > 1:
+        hp, loss = model.hyperparameter_search(hyperparams_space, x_aug, y_aug, r=42, repetitions=repetitions, patience=2)
+    else:
+        hp, loss = hyperparams_space[0], None
     model.build_model(**hp)
     model.fit(x_aug, y_aug, cb=cb, **hp)
     model.save(path_save_model)
@@ -37,6 +41,8 @@ def train_model(model, hyperparams_space, x, y, path_save_model, repetitions=100
 
 
 def train_modules(mod, hyperparams_space, x, y, path_save_modules, patience, repetitions=100, std_x=0.05, std_y=0.18):
+    for h in hyperparams_space:
+        h.update({"output_dim": 1})
     hps = []
     x_aug, y_aug = augment_data(x, y, replicate=repetitions, std_x=std_x, std_y=std_y)
 

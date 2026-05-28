@@ -1,7 +1,6 @@
 import argparse
 import json
 import pandas as pd
-import pickle
 import tensorflow as tf
 from tqdm import tqdm
 
@@ -38,8 +37,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Model training and evaluation')
     parser.add_argument('--exp_config', metavar='-e', type=str, help='models for the experiments',
                         default='test_experiment')
+    parser.add_argument('--steps', metavar='-s', nargs='+', help='steps to run',
+                        default=['compute_metrics'])
 
     args = parser.parse_args()
+    steps = args.steps
     with open(args.exp_config, 'r') as f:
         exp_config = json.load(f)
 
@@ -71,8 +73,8 @@ if __name__ == "__main__":
     std_y = exp_config['OUT_AUG_COEFF']
     
     # Read data and preprocess
-    x = pd.read_csv(exp_config["INP_PATH"])
-    y = pd.read_csv(exp_config["OUT_PATH"])
+    x = pd.read_csv(exp_config["INP_PATH"], usecols=exp_config["INP_VARS"])[exp_config["INP_VARS"]]
+    y = pd.read_csv(exp_config["OUT_PATH"], usecols=exp_config["OUT_VARS"])[exp_config["OUT_VARS"]]
 
     # y = y.loc[x["med and black sea"] == 1]
     # x = x.loc[x["med and black sea"] == 1]
@@ -81,16 +83,14 @@ if __name__ == "__main__":
         x = x.loc[x["med"]==1]
     print("Sample length: ", len(x))
 
-    x = x[exp_config["INP_VARS"]]
-    y = y[exp_config["OUT_VARS"]]
     y = y.rename(columns=dict(zip(exp_config["OUT_VARS"], exp_config["OUT_VARS_SHORT"])))
-    # print(x.head())
-    # print(y.head())
-    steps = exp_config["STEPS"]
+    print(x.head())
+    print(y.head())
 
     # Train modules for deep learning models. This takes a lot of computing time (~12 hours for experiment_1)
     if "train_modules" in steps or 'all' in steps:
         for split in tqdm(range(exp_config["N"]), desc="Training modules in splits"):
+
             x_train, y_train, _, _ = load_data_split(x, y, splits_folder, split, transform=True)
             path_save_modules = f'{exp_folder}/split_{split}/modules'
             pbar = tqdm(exp_config["MODEL_NAMES"], desc="Models", leave=False)
@@ -116,6 +116,9 @@ if __name__ == "__main__":
                 pbar.set_description(f"Running {mod_name} model...")
                 mod_ = class_instance_factory(mod_name)
                 hyperp = hs[mod_name]
+                if mod_name not in ["xgb", "rf"]:
+                    for h in hyperp:
+                        h.update({"output_dim": len(y.columns)})
                 if "concatenated" in mod_name:
                     for h in hyperp:
                         path_save_module = f'{h["root_path"]}/split_{split}/modules'

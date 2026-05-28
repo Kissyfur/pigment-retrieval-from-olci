@@ -18,8 +18,8 @@ if __name__ == "__main__":
         exp_config = json.load(f)
 
     exp_folder = f'{exp_config["EXP_NAME"]}'
-    x = pd.read_csv(exp_config["INP_PATH"])
-    y = pd.read_csv(exp_config["OUT_PATH"])
+    x = pd.read_csv(exp_config["INP_PATH"], usecols=exp_config["INP_VARS"])[exp_config["INP_VARS"]]
+    y = pd.read_csv(exp_config["OUT_PATH"], usecols=exp_config["OUT_VARS"])[exp_config["OUT_VARS"]]
 
     # y = y.loc[x["med and black sea"] == 1]
     # x = x.loc[x["med and black sea"] == 1]
@@ -28,8 +28,6 @@ if __name__ == "__main__":
         x = x.loc[x["med"] == 1]
     print("Sample length: ", len(x))
 
-    x = x[exp_config["INP_VARS"]]
-    y = y[exp_config["OUT_VARS"]]
     y = y.rename(columns=dict(zip(exp_config["OUT_VARS"], exp_config["OUT_VARS_SHORT"])))
 
     create_splits(x=x.copy(), y=y.copy(), n_splits=exp_config["N"],

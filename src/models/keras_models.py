@@ -12,13 +12,34 @@ logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
+
+def masked_mse(y_true, y_pred):
+    # Mask of valid (non-NaN) targets
+    mask = tf.math.is_finite(y_true)  # True where not NaN / not Inf
+
+    # Cast mask to float for multiplication
+    mask = tf.cast(mask, y_pred.dtype)
+
+    # Replace NaNs with zero to avoid NaN propagation
+    y_true_clean = tf.where(mask > 0, y_true, tf.zeros_like(y_true))
+    y_pred_clean = tf.where(mask > 0, y_pred, tf.zeros_like(y_pred))
+
+    # Compute squared error only where mask == 1
+    sq_error = tf.square(y_true_clean - y_pred_clean) * mask
+
+    # Normalize by number of valid elements (avoid divide-by-zero)
+    return tf.reduce_sum(sq_error) / tf.reduce_sum(mask)
+
+
 class ConvolutionalModel(BaseModel):
     def __init__(self, name='cnn'):
         self.batch = 512
         super().__init__(name=name)
 
-    def model_factory(self, dims, kernel_sizes, output_dim, dropout=0., reg_factor=0.01, loss='mse',
+    def model_factory(self, dims, kernel_sizes, output_dim, dropout=0., reg_factor=0.01, loss="mse",
                   optimizer=keras.optimizers.Adam(learning_rate=0.0001), seed=42, **kwargs):
+        if loss == "masked_mse":
+            loss = masked_mse
         # Define the model
         np.random.seed(seed)
         tf.random.set_seed(seed)
@@ -26,6 +47,7 @@ class ConvolutionalModel(BaseModel):
         model = keras.Sequential(name=self.name)
         model.add(keras.layers.Normalization(name='normalization'))
         model.add(keras.layers.Reshape((-1, 1)))
+        # model.add(keras.layers.Reshape((25, 10)))
         for i, dim in enumerate(dims):
             model.add(keras.layers.Conv1D(filters=dim, kernel_size=kernel_sizes[i], padding='same', activation='relu',
                                           kernel_initializer='he_normal',
@@ -63,6 +85,7 @@ class ConvolutionalModel(BaseModel):
             epochs_inner_loop.append([len(hist.history['loss']) - patience for hist in hists])
         metrics_ = np.mean(metrics_inner_loop, axis=0)
         epochs_ = np.mean(epochs_inner_loop, axis=0)
+        print(metrics_, epochs_)
         best_indx = np.argmin(metrics_)
         best_hp = copy.deepcopy(hyperparams_space[best_indx])
         best_epochs = int(epochs_[best_indx])
@@ -102,8 +125,10 @@ class BilstmModel(ConvolutionalModel):
     def __init__(self, name='bilstm'):
         super().__init__(name=name)
 
-    def model_factory(self, dims, output_dim, dropout=0, reg_factor=0.001, loss='mse',
+    def model_factory(self, dims, output_dim, dropout=0, reg_factor=0.001, loss="mse",
                       optimizer=keras.optimizers.Adam(learning_rate=0.0001), seed=42, **kwargs):
+        if loss == "masked_mse":
+            loss = masked_mse
         np.random.seed(seed)
         tf.random.set_seed(seed)
         random.seed(seed)
@@ -127,8 +152,10 @@ class DenseModel(ConvolutionalModel):
     def __init__(self, name='dnn'):
         super().__init__(name=name)
 
-    def model_factory(self, dims, output_dim, dropout=0, reg_factor=0.001, loss='mse',
+    def model_factory(self, dims, output_dim, dropout=0, reg_factor=0.001, loss="mse",
                       optimizer=keras.optimizers.Adam(learning_rate=0.0001), seed=42, **kwargs):
+        if loss == "masked_mse":
+            loss = masked_mse
         np.random.seed(seed)
         tf.random.set_seed(seed)
         random.seed(seed)
@@ -149,9 +176,14 @@ class ConcatenatedModulesModel(ConvolutionalModel):
     def __init__(self, name='concatenatedModel'):
         super().__init__(name=name)
 
-    def model_factory(self, modules_path, output_dim=13, activation='linear', reg_factor=0.01,
-                      last_layer=-2, loss='mse', optimizer=keras.optimizers.Adam(learning_rate=0.0001), **kwargs):
-
+    def model_factory(self, modules_path, output_dim=13, activation='linear', reg_factor=0.01, seed=42,
+                      last_layer=-2, loss="mse", learning_rate=0.0001, **kwargs):
+        optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
+        if loss == "masked_mse":
+            loss = masked_mse
+        np.random.seed(seed)
+        tf.random.set_seed(seed)
+        random.seed(seed)
         models = self.load_from_modules(modules_path=modules_path)
         # Assume all models expect the same input shape
         input_layer = keras.Input(shape=models[0].input_shape[1:])
@@ -177,8 +209,26 @@ class ConcatenatedModulesModel(ConvolutionalModel):
         # super().hyperparameter_search(hyperparams_space, x, y, inner_splits, r, repetitions, patience)
         return hyperparams_space[0], None
 
+    def iter_layers(self, layer):
+        if isinstance(layer, tf.keras.Model):
+            for sublayer in layer.layers:
+                yield from self.iter_layers(sublayer)
+        else:
+            yield layer
+
     def fit(self, x, y, x_val=None, y_val=None, epochs_warm_up=300, epochs=600, patience=5,
-            cb=None, **kwargs):
+            cb=None, verbose=0, loss='mse', rescale=False, restart=False, learning_rate=0.00001,
+            learning_rate_warm_up=0.0001,
+            warm_up=False, **kwargs):
+        if loss == "masked_mse":
+            loss = masked_mse
+
+        if restart:
+            self.reset(loss)
+            for layer in self.iter_layers(self.model):
+                if isinstance(layer, tf.keras.layers.Normalization):
+                    layer.adapt(x)
+
         if cb is None:
             cb = []
         val_data = None
@@ -186,17 +236,32 @@ class ConcatenatedModulesModel(ConvolutionalModel):
             val_data = (x_val, y_val)
             if patience!=0:
                 cb += [keras.callbacks.EarlyStopping(patience=patience)]
-        for layer in self.model.layers:
-            layer.trainable = False
-        self.model.layers[-1].trainable = True
-        h = self.model.fit(x, y, validation_data=val_data, epochs=epochs, shuffle=True, batch_size=self.batch,
-                           verbose=0, callbacks=cb)
-        for layer in self.model.layers:
+        if warm_up:
+            for layer in self.iter_layers(self.model):
+                layer.trainable = False
+            head = self.model.layers[-1]
+            head.trainable = True
+            self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate_warm_up), loss=loss)
+            h = self.model.fit(x, y, validation_data=val_data, epochs=epochs_warm_up, shuffle=True, batch_size=self.batch,
+                               verbose=verbose, callbacks=cb)
+
+        for layer in self.iter_layers(self.model):
             layer.trainable = True
-        # if epochs != 0:
-        #     h = self.model.fit(x, y, validation_data=val_data, epochs=epochs, shuffle=True, batch_size=self.batch,
-        #                        verbose=0, callbacks=cb)
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.trainable = False
+        self.model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss=loss)
+        h = self.model.fit(x, y, validation_data=val_data, epochs=epochs, shuffle=True, batch_size=self.batch,
+                           verbose=verbose, callbacks=cb)
         return h
+
+    def reset(self, loss, learning_rate=0.0001):
+        self.model = tf.keras.models.clone_model(self.model)
+        self.model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate),
+            loss=loss
+        )
+
     @staticmethod
     def load_from_modules(modules_path):
         models_ = []
@@ -205,3 +270,5 @@ class ConcatenatedModulesModel(ConvolutionalModel):
         return models_
         # return self.model_factory(None, models_, output_dim, activation='linear', reg_factor=reg_factor,
         #                           last_layer=last_layer)
+
+

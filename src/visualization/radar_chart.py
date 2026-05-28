@@ -15,7 +15,7 @@ def radial_chart(data, spoke_labels, labels, colors, markers, linestyles, title,
     theta = radar_factory(N, frame='polygon')
 
     fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=dict(projection='radar'))
-    fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
+    fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.75, bottom=0.05)
     # fig.patch.set_facecolor('#203864')  # Sets entire figure background
     # ax.set_facecolor('#203864')
     # ax.yaxis.grid(True, color='white', linewidth=0.5)  # Changes radial grid lines to red
@@ -40,35 +40,42 @@ def radial_chart(data, spoke_labels, labels, colors, markers, linestyles, title,
         # elif color == '#C89B37':
         #    alpha = 0.6
         # ax.fill(theta, d, facecolor=color, alpha=alpha, label='_nolegend_')
-        ax.plot(theta, d, color=color, label='_nolegend_', linewidth=3, linestyle=linestyle)
-    ax.plot(theta, [0.5] * N, color='r', alpha=0.4, label='_nolegend_', linewidth=1)
-    ax.plot(theta, [0.6] * N, color='green', alpha=0.4, label='_nolegend_', linewidth=1)
+        ax.plot(theta, d, color=color, label='_nolegend_', linewidth=4, linestyle=linestyle)
+    ax.plot(theta, [0.1] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.2] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.3] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.4] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.7] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.8] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+    ax.plot(theta, [0.9] * N, color='grey', alpha=0.4, label='_nolegend_', linewidth=1)
+
+    ax.plot(theta, [0.5] * N, color='r', alpha=0.4, label='_nolegend_', linewidth=3)
+    ax.plot(theta, [0.6] * N, color='green', alpha=0.4, label='_nolegend_', linewidth=3)
 
     # ax.set_varlabels(spoke_labels,  fontsize=20, color='white')
     # ax.tick_params(axis='y', colors='lightgray')  # Change grid label colors
     # ax.spines['polar'].set_color('white')
     # ax.tick_params(axis='y', labelsize=15, labelcolor='white')  # Adjust the number to your preference
-    ax.tick_params(axis='y', labelsize=15)  # Adjust the number to your preference
-    ax.set_yticks([0, 0.5, 0.6, 0.7, 0.8, 0.9, 1])  # Define where the ticks should appear
+    ax.tick_params(axis='y', labelsize=30)  # Adjust the number to your preference
+    ax.set_yticks([])  # Define where the ticks should appear
     # ax.set_yticklabels(['Low', 'Medium', 'High'], fontsize=12, color='white')
     # add legend relative to top-left plot
     ax.set_axisbelow(True)
 
-    ax.set_varlabels(spoke_labels, fontsize=15)
+    ax.set_varlabels(spoke_labels, fontsize=40)
 
     # Custom legend handles: create square patches
     legend_handles = [
-        Line2D([0], [0], color=color, marker='p', markersize=30, linestyle=linestyle, markeredgewidth=3,
+        Line2D([0], [0], color=color, marker='p', markersize=40, linestyle=linestyle, markeredgewidth=4,
                fillstyle='none', linewidth=2)
         for color, linestyle in zip(colors, linestyles)]
 
-    legend = ax.legend(legend_handles, labels, loc=(0.9, .85),
-                       labelspacing=0.1, fontsize=30, ncol=2)
+    legend = ax.legend(legend_handles, labels, loc=(1.25, .4),
+                       labelspacing=0.8, fontsize=40, ncol=1)
 
-    fig.text(0.5, 0.965, title,
-             horizontalalignment='center', color='black', weight='bold',
-             size='large')
-    plt.tight_layout()
+    # fig.text(0.5, 0.965, title,
+    #          horizontalalignment='center', color='black', weight='bold',
+    #          size='large')
 
     # Force radial grid lines behind everything
     for gl in ax.yaxis.get_gridlines():
@@ -78,6 +85,7 @@ def radial_chart(data, spoke_labels, labels, colors, markers, linestyles, title,
     for gl in ax.xaxis.get_gridlines():
         gl.set_zorder(0)
 
+    plt.tight_layout()
     if save is not None:
         plt.savefig(save)
     plt.show()
