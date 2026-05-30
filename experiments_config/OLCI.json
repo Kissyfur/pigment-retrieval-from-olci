@@ -17,8 +17,7 @@
   "OUT_AUG_COEFF": 0.18,
   "CLUSTERS": 15,
   "TEST_SIZE": 0.15,
-  "MODEL_NAMES": ["cnn", "xgb", "bilstm", "dnn", "rf", "concatenatedCNN", "concatenatedDNN", "concatenatedBiLSTM"],
+  "MODEL_NAMES": ["concatenatedCNN"],
   "MEDITERRANEAN_ONLY": false,
-  "HYPERPARAM_SPACE_FILE": "hyperparameter_spaces/OLCI.json",
-  "STEPS": ["train_modules", "train_models", "compute_metrics"]
+  "HYPERPARAM_SPACE_FILE": "hyperparameter_spaces/OLCI.json"
 }

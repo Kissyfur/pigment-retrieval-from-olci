@@ -1,13 +1,13 @@
 {
-  "EXP_NAME": "experiments/multi",
+  "EXP_NAME": "experiments/gonzalo_OLCI",
   "N": 6,
   "R": 42,
   "PATIENCE": 2,
   "REPETITIONS": 100,
-  "INP_PATH": "data/datasets/dataset_hplc_multi/log_rrs_lat_lon_month_season_depth_loc.csv",
-  "OUT_PATH": "data/datasets/dataset_hplc_multi/log_pigments.csv",
-  "SPLITS_PATH": "experiments/multi",
-  "INP_VARS" : ["412", "442", "490", "560", "673"],
+  "INP_PATH": "data/datasets/gonzalo/log_rrs.csv",
+  "OUT_PATH": "data/datasets/gonzalo/log_pigments.csv",
+  "SPLITS_PATH": "experiments/gonzalo_OLCI",
+  "INP_VARS" : ["400", "412", "442", "490", "510", "560", "620", "664", "672", "680", "708"],
   "OUT_VARS" : ["chlide_a[mg*m^3]", "chla[mg*m^3]", "chlb[mg*m^3]", "chlc1+c2[mg*m^3]",
     "fucox[mg*m^3]", "19'hxfcx[mg*m^3]", "19'btfcx[mg*m^3]",
     "diadino[mg*m^3]", "allox[mg*m^3]", "diatox[mg*m^3]", "zeaxan[mg*m^3]",
@@ -15,9 +15,9 @@
   "OUT_VARS_SHORT": ["chlid", "chl_a", "chl_b", "chc12", "fucox", "hxfcx", "btfcx", "diadi", "allox", "diato", "zeaxa", "betac", "perid"],
   "INP_AUG_COEFF": 0.05,
   "OUT_AUG_COEFF": 0.18,
-  "CLUSTERS": 15,
+  "CLUSTERS": 12,
   "TEST_SIZE": 0.15,
-  "MODEL_NAMES": ["cnn","concatenatedCNN"],
+  "MODEL_NAMES": ["cnn", "concatenatedCNN", "xgb"],
   "MEDITERRANEAN_ONLY": false,
-  "HYPERPARAM_SPACE_FILE": "hyperparameter_spaces/multi.json"
+  "HYPERPARAM_SPACE_FILE": "hyperparameter_spaces/gonzalo_OLCI.json"
 }
