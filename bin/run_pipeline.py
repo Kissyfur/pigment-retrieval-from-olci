@@ -2,14 +2,19 @@ import argparse
 import json
 import pandas as pd
 import tensorflow as tf
-from tqdm import tqdm
+import pickle
 
+from tqdm import tqdm
 from pathlib import Path
 from src.data.data_spliting import load_data_split, get_scaler
 from src.models.model_training import train_modules, train_model
 from src.metrics.metrics import Metrics
 from src.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
 from src.models.sklearn_models import RandomForestModel, XGBModel
+from src.models.shap_analysis import run_shap_study
+
+graph_names = ['chlide', 'chla', 'chlb', 'chlc12', 'fuco', "hex", "but", 'diad',
+       'allo', 'diato', 'zea', 'caro', 'peri']
 
 
 def class_instance_factory(model_name):
@@ -64,7 +69,7 @@ if __name__ == "__main__":
                 return
             py = pd.DataFrame(self.scaler.inverse_transform(self.model.predict(self.x, verbose=0)),
                               columns=exp_config["OUT_VARS_SHORT"])
-            m = mets.compute_metrics_df(self.y, py).mean(axis=1)['R2']
+            m = mets.compute_metrics_df(self.y, py).mean(axis=1)
             self.values.append(m)
 
     patience = exp_config['PATIENCE']
@@ -109,10 +114,15 @@ if __name__ == "__main__":
             path_save_model = f'{exp_folder}/split_{split}/models'
             pbar = tqdm(exp_config["MODEL_NAMES"], desc="Models", leave=False)
             for mod_name in pbar:
+                if mod_name in ["cnn", "bilstm", "dnn"]:
+                    continue
                 cb = None
                 if y_test is not None:
                     loaded_scaler = get_scaler(splits_folder, split)
-                    cb = FunctionCallbackOnSet(x_test, y_test, loaded_scaler)
+                    y_train_not_transformed = pd.DataFrame(loaded_scaler.inverse_transform(y_train),
+                                                           columns=y_train.columns)
+                    cb = [FunctionCallbackOnSet(x_test, y_test, loaded_scaler),
+                          FunctionCallbackOnSet(x_train, y_train_not_transformed, loaded_scaler)]
                 pbar.set_description(f"Running {mod_name} model...")
                 mod_ = class_instance_factory(mod_name)
                 hyperp = hs[mod_name]
@@ -137,12 +147,21 @@ if __name__ == "__main__":
             path_metrics = Path(f'{exp_folder}/split_{split}/metrics')
             path_metrics.mkdir(exist_ok=True, parents=True)
             for mod_name in exp_config["MODEL_NAMES"]:
+                if mod_name in ["cnn", "bilstm", "dnn"]:
+                    continue
                 mod_ = class_instance_factory(mod_name)
                 mod_.load(path_model)
                 if x_test is not None:
                     py = pd.DataFrame(loaded_scaler.inverse_transform(mod_.predict(x_test)), columns=y_test.columns)
                     df = mets.compute_metrics_df(y_test, py)
                     df.to_csv(path_metrics / f'{mod_.name}_test.csv')
+                    shap_values, imp_df = run_shap_study(mod_.model, x_train, x_test, graph_names)
+
+                    importance_path = path_metrics / f'shap_mean_{mod_name}.csv'
+                    imp_df.to_csv(importance_path)
+                    with open(path_metrics / f'shap_{mod_name}.pkl', 'wb') as f:
+                        pickle.dump(shap_values, f)
+
                 py = pd.DataFrame(loaded_scaler.inverse_transform(mod_.predict(x_train)), columns=y_train.columns)
                 df = mets.compute_metrics_df(y_train, py)
                 df.to_csv(path_metrics / f'{mod_.name}_train.csv')

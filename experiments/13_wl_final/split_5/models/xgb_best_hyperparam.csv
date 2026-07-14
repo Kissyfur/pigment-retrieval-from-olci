@@ -1,2 +1,0 @@
-tree_method,subsample,n_estimators,min_child_weight,max_depth,lambda,gamma,eta,colsample_bytree,booster,alpha,val_loss,test_error
-auto,0.75,150,5,6,1,0.5,0.1,0.75,gbtree,0.5,0.7009187340736389,[]

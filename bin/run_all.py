@@ -14,17 +14,17 @@ commands = [
     #                          Experiments OLCI Talone dataset (very long)
     # [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/OLCI.json"],
     # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/OLCI.json",
-    #  "--steps", *STEPS],
+    #  "--steps", *ALL],
 
     #                            Experiments multi Talone dataset (very long)
     # [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/multi.json"],
     # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi.json",
-    #  "--steps", *STEPS],
+    #  "--steps", *MODELS_METS],
 
     #                             Experiments Gonzalo dataset (very long)
-    [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/gonzalo.json"],
-    [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/gonzalo.json",
-     "--steps", *ALL],
+    # sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/gonzalo.json"],
+    # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/gonzalo.json",
+    #  "--steps", *ALL],
 
     #                             Experiments Gonzalo OLCI dataset (very long)
     # [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/gonzalo_OLCI.json"],
@@ -53,18 +53,18 @@ commands = [
     #                                 Experiments multi matchup dataset
     # [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/multi_sat.json"],
     # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat.json",
-    #  "--steps", *STEPS],
+    #  "--steps", *ALL],
 
     # Experiments multi matchup dataset fine tuning
-    # [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/multi_sat_preft.json"],
-    # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_preft.json",
-    #  "--steps", *MODULES],
-    # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_ft.json",
-    #  "--steps", *MODELS_METS],
+    [sys.executable, "./bin/split_data.py ", "--exp_config", "experiments_config/multi_sat_preft.json"],
+    [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_preft.json",
+     "--steps", *MODULES],
+    [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_ft.json",
+     "--steps", *MODELS_METS],
 
     # Experiments multi matchup dataset from scratch
-    # [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_scratch.json",
-    #  "--steps", *MODELS_METS],
+    [sys.executable, "./bin/run_pipeline.py ", "--exp_config", "experiments_config/multi_sat_scratch.json",
+     "--steps", *MODELS_METS],
 
     #                                   DropTheMic / Pierre datasets
 

@@ -1,0 +1,2 @@
+dims,kernel_sizes,dropout,reg_factor,name,loss,output_dim,epochs,val_loss
+"[4, 4, 4, 4]","[3, 5, 7, 9]",0.0,0.01,m,mse,13,201,0.34961872299512226

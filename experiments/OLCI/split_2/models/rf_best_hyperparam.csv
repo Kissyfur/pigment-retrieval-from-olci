@@ -1,0 +1,2 @@
+n_estimators,min_samples_split,min_samples_leaf,max_features,max_depth,bootstrap,val_loss,test_error
+250,2,1,log2,7,False,0.7279151123912251,[]
