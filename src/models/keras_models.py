@@ -107,7 +107,8 @@ class ConvolutionalModel(BaseModel):
         return h
 
     def predict(self, x, verbose=0):
-        return self.model.predict(x, verbose=verbose)
+        # Large batches make predicting many samples (e.g. all the pixels of an image) much faster
+        return self.model.predict(x, verbose=verbose, batch_size=4096)
 
     def save_model(self, p):
         p = p.with_suffix('.h5')

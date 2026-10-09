@@ -8,13 +8,13 @@ from src.models.sklearn_models import RandomForestModel, XGBModel
 
 def class_instance_factory(model_name):
     if model_name == 'rf':
-        return RandomForestModel(),
+        return RandomForestModel()
     elif model_name == 'xgb':
-        return XGBModel(),
+        return XGBModel()
     elif model_name == 'cnn':
-        return ConvolutionalModel(),
+        return ConvolutionalModel()
     elif model_name == 'dnn':
-        return DenseModel(),
+        return DenseModel()
     elif model_name == 'bilstm':
         return BilstmModel()
     elif model_name in ['concatenatedCNN', "concatenatedDNN", "concatenatedBiLSTM"]:

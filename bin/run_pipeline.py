@@ -13,8 +13,9 @@ from src.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel
 from src.models.sklearn_models import RandomForestModel, XGBModel
 from src.models.shap_analysis import run_shap_study
 
-graph_names = ['chlide', 'chla', 'chlb', 'chlc12', 'fuco', "hex", "but", 'diad',
-       'allo', 'diato', 'zea', 'caro', 'peri']
+graph_names = {'chlid': 'chlide', 'chl_a': 'chla', 'chl_b': 'chlb', 'chc12': 'chlc12', 'fucox': 'fuco',
+               'hxfcx': "hex", 'btfcx': "but", 'diadi': 'diad', 'allox': 'allo', 'diato': 'diato', 'zeaxa': 'zea',
+               'betac': 'caro', 'perid': 'peri'}
 
 
 def class_instance_factory(model_name):
@@ -155,7 +156,8 @@ if __name__ == "__main__":
                     py = pd.DataFrame(loaded_scaler.inverse_transform(mod_.predict(x_test)), columns=y_test.columns)
                     df = mets.compute_metrics_df(y_test, py)
                     df.to_csv(path_metrics / f'{mod_.name}_test.csv')
-                    shap_values, imp_df = run_shap_study(mod_.model, x_train, x_test, graph_names)
+                    shap_values, imp_df = run_shap_study(mod_.model, x_train, x_test,
+                                                         [graph_names.get(c, c) for c in y_test.columns])
 
                     importance_path = path_metrics / f'shap_mean_{mod_name}.csv'
                     imp_df.to_csv(importance_path)

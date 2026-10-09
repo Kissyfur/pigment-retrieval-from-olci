@@ -107,7 +107,7 @@ class Metrics:
             t, p = drop_nans(ty[:, col], py[:, col])
             if len(t) == 0:
                 logging.info(f"Can not compute metrics on column {col} due to NaN's")
-                mets.append([np.nan for met in self.metrics])
+                mets.append({met_name: np.nan for met_name in self.metrics})
                 continue
             mets.append({met_name: met(t, p) for met_name, met in self.metrics.items()})
         return mets

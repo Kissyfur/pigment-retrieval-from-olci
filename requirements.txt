@@ -23,5 +23,6 @@ cartopy
 PyQt5
 seaborn
 xgboost
+shap
 copernicusmarine
 xlrd
