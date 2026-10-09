@@ -27,7 +27,7 @@ def available_models(configs_dir='experiments_config'):
 class Predictor:
     """Pigment concentrations [mg m^-3] from Rrs [sr^-1], as the mean of the model trained in each split."""
 
-    def __init__(self, model='OLCI/concatenatedCNN'):
+    def __init__(self, model='OLCI_sat_ft/concatenatedCNN'):
         # Imported here so that listing the available models does not load TensorFlow
         from src.models.model_training import class_instance_factory
 

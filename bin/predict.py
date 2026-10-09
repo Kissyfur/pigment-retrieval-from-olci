@@ -11,6 +11,8 @@ from src.predict.predict import Predictor, available_models
 PRODUCT_BANDS = {'RRS400': '400', 'RRS412_5': '412', 'RRS442_5': '442', 'RRS490': '490', 'RRS510': '510',
                  'RRS560': '560', 'RRS620': '620', 'RRS665': '665', 'RRS673_75': '673', 'RRS681_25': '681',
                  'RRS708_75': '708', 'RRS412': '412', 'RRS443': '442', 'RRS555': '560', 'RRS670': '673'}
+# Default models, fine-tuned with satellite matchups: the first one whose bands are in the data is used
+DEFAULT_MODELS = ['OLCI_sat_ft/concatenatedCNN', 'multi_sat_ft/concatenatedCNN']
 
 
 if __name__ == '__main__':
@@ -24,15 +26,17 @@ if __name__ == '__main__':
                            for name, (config, splits) in models.items())
                + '\n\nexamples:\n'
                  '  python bin/predict.py --data data/examples/olci_rrs_example.csv\n'
-                 '  python bin/predict.py --data my_olci_image.nc --model OLCI_sat_ft/concatenatedCNN\n'
+                 '  python bin/predict.py --data my_olci_image.nc\n'
+                 '  python bin/predict.py --data my_in_situ_rrs.csv --model OLCI/concatenatedCNN\n'
                  '  python bin/predict.py --data my_log_rrs.csv --logged')
     parser.add_argument('--data', required=True,
                         help='CSV file with one row per sample, or NetCDF file (e.g. images with lat and lon '
                              'dimensions), with one column or variable per band, named by its wavelength (e.g. 412) '
                              'or as in the Copernicus Marine products (e.g. RRS412_5). Values: Rrs in sr^-1')
-    parser.add_argument('--model', default='OLCI/concatenatedCNN', choices=models, metavar='MODEL',
-                        help='one of the available models listed below (default: OLCI/concatenatedCNN, the CNN of '
-                             'the paper for the 11 OLCI bands)')
+    parser.add_argument('--model', choices=models, metavar='MODEL',
+                        help='one of the available models listed below. Default: the CNN fine-tuned with satellite '
+                             'matchups for the bands of your data, OLCI_sat_ft/concatenatedCNN (11 OLCI bands) or '
+                             'multi_sat_ft/concatenatedCNN (5 bands)')
     preprocessing = parser.add_mutually_exclusive_group()
     preprocessing.add_argument('--logged', action='store_true', help='the data contain ln(Rrs) instead of Rrs')
     preprocessing.add_argument('--floor_quantile', type=float,
@@ -44,12 +48,15 @@ if __name__ == '__main__':
         sys.exit()
     args = parser.parse_args()
 
-    bands = models[args.model][0]['INP_VARS']
     path_data = Path(args.data)
     netcdf = path_data.suffix in ('.nc', '.nc4')
     data = xr.open_dataset(path_data) if netcdf else pd.read_csv(path_data)
     renames = {name: band for name, band in PRODUCT_BANDS.items() if name in data and band not in data}
     data = data.rename(renames) if netcdf else data.rename(columns=renames)
+    if args.model is None:
+        args.model = next((model for model in DEFAULT_MODELS
+                           if all(band in data for band in models[model][0]['INP_VARS'])), DEFAULT_MODELS[0])
+    bands = models[args.model][0]['INP_VARS']
 
     missing = [band for band in bands if band not in data]
     if missing:
