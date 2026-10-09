@@ -1,4 +1,6 @@
 import pandas as pd
+import pickle
+
 from tqdm import tqdm
 from src.data.data_utils import augment_data
 from src.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
@@ -29,13 +31,15 @@ def train_model(model, hyperparams_space, x, y, path_save_model, repetitions=100
     else:
         hp, loss = hyperparams_space[0], None
     model.build_model(**hp)
-    model.fit(x_aug, y_aug, cb=cb, **hp)
+    hist = model.fit(x_aug, y_aug, cb=cb, **hp)
     model.save(path_save_model)
     # pd.DataFrame(hp).to_csv(path_save_model + f'/{model.name}_best_hyperparam.csv')
-    hp.update({'val_loss': loss})
+    hp.update({'val_loss': loss, 'hist': hist.history})
     if cb is not None:
-        hp.update({'test_error': cb.values})
-    pd.DataFrame([hp]).to_csv(path_save_model + f'/{model.name}_best_hyperparam.csv', index=False)
+        hp.update({f'cb_{i}': c.values for i, c in enumerate(cb)})
+    with open(f'{path_save_model}/{model.name}_training_info.pkl', "wb") as f:
+        pickle.dump(hp, f)
+    # pd.DataFrame([hp]).to_csv(path_save_model + f'/{model.name}_best_hyperparam.csv', index=False)
 
     return
 

@@ -38,7 +38,7 @@
   },
   "concatenatedCNN": [
     {
-      "root_path": "experiments/OLCI_sat_preft/",
+      "root_path": "experiments/multi_sat_preft/",
       "modules_names": [
         "cnn_chlid.h5",
         "cnn_chl_a.h5",
@@ -53,8 +53,7 @@
         "cnn_zeaxa.h5",
         "cnn_perid.h5"],
       "modules_path": [], "reg_factor": 0.01, "name": "cm", "epochs":  300, "loss": "masked_mse", "warm_up": false,
-      "restart": true,
-      "learning_rate": 0.0001
+      "restart": true, "learning_rate": 0.0001
     }
   ]
 }
