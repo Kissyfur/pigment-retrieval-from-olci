@@ -6,15 +6,15 @@ Code and trained models of the paper:
 > Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional neural networks and
 > transfer learning. *Frontiers in Remote Sensing*, 7. https://doi.org/10.3389/frsen.2026.1880618
 
-The models estimate the concentration of 13 phytoplankton pigments from the remote sensing reflectance (Rrs) at the
-11 visible bands of Sentinel-3 OLCI, or at the 5 bands of multi-sensor products such as GlobColour.
+The models estimate the concentration of 13 phytoplankton pigments from the remote sensing reflectance (Rrs), either
+11-band from Sentinel-3 OLCI, or 5-band from legacy sensors as well as multi-sensor products such as GlobColour.
 
 ## Get pigment predictions for your data
 
 ### 1. Install
 
-You need [git](https://git-scm.com/) and [Python 3.9](https://www.python.org/downloads/release/python-3913/), the
-version the models were trained with. Download the code and create a Python environment in its folder:
+You will need [git](https://git-scm.com/) and [Python 3.9](https://www.python.org/downloads/release/python-3913/). It
+may not work with other versions. Download the code and create a Python environment in its folder:
 
 ```bash
 git clone https://github.com/Kissyfur/pigment-retrieval-from-olci.git
@@ -22,7 +22,7 @@ cd pigment-retrieval-from-olci
 py -3.9 -m venv .venv         # on Linux or macOS: python3.9 -m venv .venv
 ```
 
-Activate the environment (do it again every time you open a new terminal) and install the packages:
+Activate the environment (do it every time you open a new terminal) and install the packages:
 
 ```bash
 .venv\Scripts\activate        # on Linux or macOS: source .venv/bin/activate
@@ -37,14 +37,14 @@ Run all the next commands from the `pigment-retrieval-from-olci` folder, with th
 
 ### 2. Check the installation
 
-Predict the pigments of the example file, which has four OLCI pixels:
+Predict the pigments from the example file containing four OLCI pixels:
 
 ```bash
 python bin/predict.py --data data/examples/olci_rrs_example.csv
 ```
 
-The script reports that 3 of the 4 samples were predicted (the fourth has negative Rrs, see
-[step 5](#5-read-the-output)) and saves them in `predictions/olci_rrs_example_OLCI_sat_ft_concatenatedCNN.csv`, where
+The script will report that 3 of the 4 samples were predicted (the fourth has negative Rrs, see
+[step 5](#5-read-the-output)) and save them in `predictions/olci_rrs_example_OLCI_sat_ft_concatenatedCNN.csv`, where
 the chlorophyll a (`chl_a`) of `pixel_1` is about 0.39 mg m⁻³.
 
 ### 3. Prepare your data
@@ -83,10 +83,10 @@ log-transformed, ln(Rrs), add `--logged` to the command of the next step.
 python bin/predict.py --data path/to/my_data.csv
 ```
 
-By default, the script uses the CNN of the paper fine-tuned with satellite matchups (CNN_FT in the paper) for the bands
-of your data: `OLCI_sat_ft/concatenatedCNN` if it has the 11 OLCI bands, `multi_sat_ft/concatenatedCNN` if it has the
-5 multi-sensor bands. For in situ radiometry, or to also predict β-carotene from the OLCI bands, choose the models
-trained with in situ data with `--model`:
+By default, the script uses the CNN model detailed in the paper, i.e., trained with in-situ data and fine-tuned with
+satellite matchups (CNN_FT in the paper): either `OLCI_sat_ft/concatenatedCNN` or `multi_sat_ft/concatenatedCNN` for
+11-band and 5-band Rrs, respectively. Models relying only on in-situ data could provide better performance if applied
+to in-situ observations. They can be selected with the `--model` option:
 
 | `--model`                      | Bands | Pigments           | Trained with                                          |
 |--------------------------------|-------|--------------------|-------------------------------------------------------|
@@ -101,9 +101,8 @@ For example, for in situ Rrs at the OLCI bands:
 python bin/predict.py --data my_in_situ_rrs.csv --model OLCI/concatenatedCNN
 ```
 
-`concatenatedCNN` is the model of the paper: one CNN module per pigment, joined by a dense output layer. Run
-`python bin/predict.py --help` to see all the available models, with their bands (e.g. `OLCI/cnn`, a single CNN for
-all the pigments), and all the options:
+All four models are described in the reference paper. Run `python bin/predict.py --help` to see all the available
+models as well as the corresponding bands (e.g. `OLCI/cnn`, a single CNN for all the pigments) and options:
 
 | Option             | Description                                                                         |
 |--------------------|-------------------------------------------------------------------------------------|
@@ -137,15 +136,13 @@ concentrations are in mg m⁻³:
 | `perid` | Peridinin                  | peri                      |
 
 The models work with the logarithm of Rrs, so samples with a missing or non-positive Rrs in any band are not
-predicted, and the script tells how many. In satellite data this is frequent in the red bands of clear waters. To
-predict them too, add `--floor_quantile 0.05`: the Rrs of each band below the 5th percentile of its positive values in
-your file are raised to that percentile, as the paper did with its training data (5th percentile for the in situ data,
-1st for the satellite matchups). Use it with files with many samples, such as images, and take those predictions with
-caution: their red-band Rrs become very low values, at or beyond the lower end of the training data.
+predicted, and the script will report the number of failed retrievals. Negative Rrs is frequent in satellite
+measurements, especially at the longest wavelengths. To overcome this issue, add `--floor_quantile 0.05`: the Rrs of
+each band below the 5th percentile of its positive values are set to that percentile.
 
 The models were trained with in situ radiometry from European waters (Mediterranean Sea, Black Sea, Atlantic and
 English Channel), and the `_sat_ft` models were then fine-tuned with satellite matchups. See the paper for the accuracy
-of each model, and expect it to be lower in waters unlike those.
+of each model.
 
 ### Use it from another project
 
@@ -173,6 +170,78 @@ pigments = predictor.predict(xr.open_dataset('my_image.nc'))  # an xarray Datase
 ```
 
 To update the package to the latest version on GitHub, add `--force-reinstall --no-deps` to the `pip install` command.
+
+## Model card
+
+### Model details
+
+- **Developed by:** Borja Sánchez-López, Marco Talone, Jesus Cerquides, Annalisa Di Cicco, Gonzalo Martínez-Fornos and
+  Petra Slavinec.
+- **Model type:** regression with 1D convolutional neural networks (Keras, TensorFlow 2.10): one CNN module per
+  pigment, joined by a dense output layer.
+- **Input:** Rrs [sr⁻¹] at the 11 OLCI bands (400–708 nm) or at 5 bands (412, 442, 490, 560 and 673 nm).
+- **Output:** concentrations [mg m⁻³] of 13 phytoplankton pigments as measured by HPLC (12, without β-carotene, for
+  `OLCI_sat_ft`).
+- **Paper:** https://doi.org/10.3389/frsen.2026.1880618
+
+### Intended use
+
+Research on phytoplankton communities from ocean colour: estimating the concentration of diagnostic pigments from in
+situ radiometry, Sentinel-3 OLCI images or multi-sensor products such as Copernicus-GlobColour, in waters similar to
+those of the training data.
+
+### Out-of-scope use
+
+- Replacing HPLC measurements where measured concentrations are required.
+- Rrs from sensors or bands that do not match the ones above, or from waters optically unlike those of the training
+  data, without validating the predictions there.
+- Satellite pixels affected by clouds, sun glint, land adjacency or a failed atmospheric correction.
+
+### Bias, risks and limitations
+
+- **Geographical bias:** the in situ training data (185 stations of the BiOMaP programme, 2014–2021) come from
+  European waters, which the paper recognizes as a limiting factor for global transferability of both the 11- and
+  5-band models.
+- **Lower accuracy on satellite data:** in situ, the paper reports for the CNN coefficients of determination (R²) of
+  0.70–0.93 and mean absolute percentage errors (MAPE) of 25–55% across the 13 pigments. On satellite data, the R² of
+  the fine-tuned models decreases by about 0.2 and their MAPE is generally lower than 70%. Atmospheric correction (the
+  atmosphere often accounts for more than 90% of the signal measured by a satellite), adjacency to land or clouds and
+  sub-pixel heterogeneity add uncertainty.
+- **Pigments:** zeaxanthin and 19'-butanoyloxyfucoxanthin remain challenging regardless of model complexity, due to
+  their low concentrations, poor representation in the training data and spectral overlap with dominant pigments.
+  `OLCI_sat_ft` does not predict β-carotene, which is missing from its satellite matchups.
+- **Satellite training data:** the matchups (668 for 11 bands, 7,287 for 5 bands) combine pigment data from several
+  sources (MAREDAT, NOMAD and TARA) with non-uniform pigment suites.
+- **ESA OC-CCI:** the applicability to this dataset was not explicitly assessed, although no compatibility issues are
+  expected.
+- **Non-positive Rrs:** the Rrs set with `--floor_quantile` are at or beyond the lower end of the training data, so the
+  predictions of those samples are less reliable.
+- **No uncertainty per sample:** the predictions are point estimates.
+
+### Recommendations
+
+- Validate the predictions against local HPLC measurements before using them in new regions, waters or sensors.
+- Use the fine-tuned (`_sat_ft`) models for satellite data and the in situ models for in situ radiometry, and report
+  which model you used.
+- Mask the cloudy, glint-affected and coastal-adjacency pixels with the quality flags of the satellite product before
+  predicting.
+
+### Training and evaluation
+
+- **Data:** in situ Rrs and HPLC pigments from 185 stations of the BiOMaP programme (2014–2021). For the fine-tuning,
+  Copernicus-GlobColour Rrs matched with HPLC pigments from MAREDAT, NOMAD and TARA.
+- **Preprocessing:** Rrs and pigments are log-transformed, after setting the values below a low percentile to that
+  percentile. The training data are augmented by mixing pairs of samples and adding Gaussian noise.
+- **Training:** one CNN module per pigment, selected by 3-fold cross-validation; the modules are then joined by a dense
+  output layer, trained for 300 epochs with the modules frozen and 100 more with all the layers. The `_sat_ft` models
+  are then fine-tuned with the satellite matchups.
+- **Evaluation:** R² and mean squared error of the log-transformed pigments, and MAE, MAPE, ME and MPE of the
+  concentrations, on a 15% test set stratified by clusters of the pigments; for the in situ models the whole process is
+  repeated with 6 different splits (see `experiments/*/split_*/metrics`).
+
+### Contact
+
+Open an issue in this repository.
 
 ## Repository structure
 
@@ -209,8 +278,8 @@ If you use this code or the trained models, please cite the paper:
 
 ```bibtex
 @article{sanchezlopez2026pigments,
-  title   = {Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional neural
-             networks and transfer learning},
+  title   = {{Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional neural
+             networks and transfer learning}},
   author  = {S{\'a}nchez-L{\'o}pez, Borja and Talone, Marco and Cerquides, Jesus and Di Cicco, Annalisa and
              Mart{\'i}nez-Fornos, Gonzalo and Slavinec, Petra},
   journal = {Frontiers in Remote Sensing},
@@ -219,3 +288,38 @@ If you use this code or the trained models, please cite the paper:
   doi     = {10.3389/frsen.2026.1880618}
 }
 ```
+
+## Funding
+
+This work was supported partly by Biodiversa+, the European Biodiversity Partnership, in the context of the PETRI-MED
+project under the 2021–2022 BiodivProtect joint call for research proposals, co-funded by the European Commission
+(GA N°101052342), the Spanish Ministry for the Ecological Transition and the Demographic Challenge (MITECO), the Spanish
+Fundación Biodiversidad, the Italian Ministry of Universities and Research (MUR), and the Slovenian Ministry of Higher
+Education, Science and Innovation; partly by the “Severo Ochoa Centre of Excellence” Accreditation under Grant
+CEX 2024-001494-S funded by AEI 10.13039/501100011033; partly by EuroMarine through OYSTER grants for Early Career
+Researchers in the context of the project DROPTHEMIC-MED. GM.F. acknowledges support from the FPI Grant
+CEX 2019-421 000928-S-21-1. AD contributed to this work also in the context of the Copernicus Marine Service (contract
+Refs. 21001L2-COP-TAC OC-2200 and 24251L03-COP-TAC OC-2200).
+
+## Acknowledgements
+
+BiOMaP data were collected under the leadership of the European Commission’s Joint Research Centre. The authors would
+like to acknowledge Giuseppe Zibordi and Jean-François Berthon for their continuous support to the BiOMaP programme as
+well as all the scientific and technical personnel involved in the preparation and execution of its numerous
+oceanographic cruises. The Editor and two reviewers are duly acknowledged for their careful reading of the manuscript
+and their insightful comments. Copernicus-GlobColour data used in this study were developed and validated by ACRI-ST,
+France, and has been accessed through the Copernicus Marine Service. NOMAD data used in this study were downloaded from
+the SeaWiFS Bio-optical Archive and Storage System (SeaBASS) and contributed by participants in the NASA SIMBIOS Program
+(NRA-96-MTPE-04 and NRA-99-OES-09) as well as by voluntary contributors. All scientific and technical personnel involved
+in the preparation of the following datasets are gratefully acknowledged: 10.5067_SeaBASS_ACIDD_DATA001,
+10.5067_SeaBASS_AMLR_DATA001, 10.5067_SeaBASS_BENTHICECOLOGY_FROMSPAC, 10.5067_SeaBASS_BIOCOMPLEXITY_DATA001,
+10.5067_SeaBASS_BOWDOINBUOY_DATA001, 10.5067_SeaBASS_CASES_DATA001, 10.5067_SeaBASS_CCE-LTER_DATA001,
+10.5067_SeaBASS_CHESAPEAKE_LIGHT_TOWER, 10.5067_SeaBASS_ECOHAB_DATA001, 10.5067_SeaBASS_ECOMON_DATA001,
+10.5067_SeaBASS_EGEE3_DATA001, 10.5067_SeaBASS_EGEE5_DATA001, 10.5067_SeaBASS_GOMECC_DATA001,
+10.5067_SeaBASS_GULFCARBON_DATA001, 10.5067_SeaBASS_INTRO_DATA001, 10.5067_SeaBASS_LAMONT_SCS_DATA001,
+10.5067_SeaBASS_LATTE_DATA001, 10.5067_SeaBASS_LMER-TIES_DATA001, 10.5067_SeaBASS_MOCE_PIGMENT_DATABASE_D,
+10.5067_SeaBASS_MURI_CAMOUFLAGE_DATA001, 10.5067_SeaBASS_MVCO_DATA001, 10.5067_SeaBASS_NES-LTER_DATA001,
+10.5067_SeaBASS_NOAA_DATA001, 10.5067_SeaBASS_NSF-BWZ_DATA001, 10.5067_SeaBASS_NSF_GULF_RAPID_DATA001,
+10.5067_SeaBASS_PACE_ABSCLOSURE_DATA001, 10.5067_SeaBASS_SABOR_DATA001, 10.5067_SeaBASS_SBI_DATA001,
+10.5067_SeaBASS_SFMBON_DATA001, 10.5067_SeaBASS_TARA_OCEANS_POLAR_CIRCL, 10.5067_SeaBASS_THREERIVERS_DATA001,
+10.5067_SeaBASS_VOLPE_DATA001.
