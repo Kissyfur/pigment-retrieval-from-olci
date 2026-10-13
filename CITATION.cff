@@ -1,14 +1,41 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-authors:
-- family-names: "Sanchez-Lopez"
-  given-names: "Borja"
-- family-names: " Cerquides"
-  given-names: "Jesus"
-- family-names: " Talone"
-  given-names: "Marco"
+message: "If you use this software or its trained models, please cite the paper below."
 title: "pigment-retrieval-from-olci"
-version: 1.0.0
-doi: 10.5281/zenodo.1234
-date-released: 2025-10-13
-url: "https://github.com/Kissyfur/pigment-retrieval-from-olci"
+type: software
+authors:
+- family-names: "Sánchez-López"
+  given-names: "Borja"
+- family-names: "Talone"
+  given-names: "Marco"
+- family-names: "Cerquides"
+  given-names: "Jesus"
+- family-names: "Di Cicco"
+  given-names: "Annalisa"
+- family-names: "Martínez-Fornos"
+  given-names: "Gonzalo"
+- family-names: "Slavinec"
+  given-names: "Petra"
+repository-code: "https://github.com/Kissyfur/pigment-retrieval-from-olci"
+license:
+- Apache-2.0
+- CC-BY-4.0
+preferred-citation:
+  type: article
+  title: "Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional neural networks and transfer learning"
+  authors:
+  - family-names: "Sánchez-López"
+    given-names: "Borja"
+  - family-names: "Talone"
+    given-names: "Marco"
+  - family-names: "Cerquides"
+    given-names: "Jesus"
+  - family-names: "Di Cicco"
+    given-names: "Annalisa"
+  - family-names: "Martínez-Fornos"
+    given-names: "Gonzalo"
+  - family-names: "Slavinec"
+    given-names: "Petra"
+  journal: "Frontiers in Remote Sensing"
+  volume: 7
+  year: 2026
+  doi: "10.3389/frsen.2026.1880618"

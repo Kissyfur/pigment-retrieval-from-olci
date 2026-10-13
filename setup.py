@@ -5,6 +5,8 @@ setup(
     version='0.1.0',
     description='Phytoplankton pigment concentrations from remote sensing reflectance (Sentinel-3 OLCI)',
     url='https://github.com/Kissyfur/pigment-retrieval-from-olci',
+    # Code under Apache-2.0 and trained models under CC BY 4.0 (see NOTICE)
+    license='Apache-2.0 AND CC-BY-4.0',
     packages=find_packages(include=['pigment_retrieval', 'pigment_retrieval.*']) + ['pigment_retrieval.trained'],
     # The trained models stay where the experiments save them, and are installed in pigment_retrieval/trained
     package_dir={'pigment_retrieval.trained': '.'},

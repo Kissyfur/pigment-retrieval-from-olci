@@ -183,6 +183,7 @@ To update the package to the latest version on GitHub, add `--force-reinstall --
 - **Output:** concentrations [mg m⁻³] of 13 phytoplankton pigments as measured by HPLC (12, without β-carotene, for
   `OLCI_sat_ft`).
 - **Paper:** https://doi.org/10.3389/frsen.2026.1880618
+- **License:** code under Apache-2.0 and trained models under CC BY 4.0 (see [License](#license)).
 
 ### Intended use
 
@@ -288,6 +289,20 @@ If you use this code or the trained models, please cite the paper:
   doi     = {10.3389/frsen.2026.1880618}
 }
 ```
+
+## License
+
+This is open research: anyone can use, modify and share the code and the trained models, as long as the authors are
+credited. Please cite the paper above in any work that uses them or builds on them.
+
+- The code is licensed under the [Apache License 2.0](LICENSE). Copies and derived works must keep the [NOTICE](NOTICE)
+  file, which credits the authors and the paper.
+- The trained models (the model and scaler files in `experiments/`) are licensed under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), like the paper.
+- Data obtained from other providers (e.g. Copernicus Marine Service, SeaBASS) keep the terms of their providers.
+
+Copyright 2026 Borja Sánchez-López, Marco Talone, Jesus Cerquides, Annalisa Di Cicco, Gonzalo Martínez-Fornos and
+Petra Slavinec.
 
 ## Funding
 

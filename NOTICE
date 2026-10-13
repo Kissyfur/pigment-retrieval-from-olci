@@ -1,0 +1,16 @@
+pigment-retrieval-from-olci
+Copyright 2026 Borja Sánchez-López, Marco Talone, Jesus Cerquides, Annalisa Di Cicco, Gonzalo Martínez-Fornos and
+Petra Slavinec
+
+This software and its trained models accompany the paper:
+
+Sánchez-López, B., Talone, M., Cerquides, J., Di Cicco, A., Martínez-Fornos, G. and Slavinec, P. (2026).
+Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional neural networks and
+transfer learning. Frontiers in Remote Sensing, 7. https://doi.org/10.3389/frsen.2026.1880618
+
+Please cite this paper in any work that uses this software or its trained models, or that builds on them.
+
+The source code is licensed under the Apache License, Version 2.0 (see the LICENSE file). The trained models (the
+model and scaler files in the experiments folder) are licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/). Data obtained from other providers
+(e.g. Copernicus Marine Service, SeaBASS) keep the terms of their providers.
