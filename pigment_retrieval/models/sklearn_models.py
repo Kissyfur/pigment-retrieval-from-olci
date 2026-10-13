@@ -1,10 +1,10 @@
 import xgboost as xgb
 import pickle
 
-from src.models import BaseModel
+from pigment_retrieval.models import BaseModel
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV
-from src.data.data_utils import augment_data
+from pigment_retrieval.data.data_utils import augment_data
 
 
 class RandomForestModel(BaseModel):

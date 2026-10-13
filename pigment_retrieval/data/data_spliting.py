@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 
 from pathlib import Path
-from src.data.data_utils import stratified_split_multidim_kmeans
+from pigment_retrieval.data.data_utils import stratified_split_multidim_kmeans
 
 
 def load_split(path_splits, split):

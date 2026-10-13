@@ -5,7 +5,7 @@ import random
 import copy
 from sklearn.model_selection import KFold
 
-from src.models import BaseModel
+from pigment_retrieval.models import BaseModel
 
 import logging, os
 logging.disable(logging.WARNING)

@@ -6,12 +6,12 @@ import pickle
 
 from tqdm import tqdm
 from pathlib import Path
-from src.data.data_spliting import load_data_split, get_scaler
-from src.models.model_training import train_modules, train_model
-from src.metrics.metrics import Metrics
-from src.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
-from src.models.sklearn_models import RandomForestModel, XGBModel
-from src.models.shap_analysis import run_shap_study
+from pigment_retrieval.data.data_spliting import load_data_split, get_scaler
+from pigment_retrieval.models.model_training import train_modules, train_model
+from pigment_retrieval.metrics.metrics import Metrics
+from pigment_retrieval.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
+from pigment_retrieval.models.sklearn_models import RandomForestModel, XGBModel
+from pigment_retrieval.models.shap_analysis import run_shap_study
 
 graph_names = {'chlid': 'chlide', 'chl_a': 'chla', 'chl_b': 'chlb', 'chc12': 'chlc12', 'fucox': 'fuco',
                'hxfcx': "hex", 'btfcx': "but", 'diadi': 'diad', 'allox': 'allo', 'diato': 'diato', 'zeaxa': 'zea',

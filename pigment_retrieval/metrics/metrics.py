@@ -4,7 +4,7 @@ import logging
 
 from sklearn.metrics import (mean_squared_error, r2_score, mean_absolute_error,
                              mean_absolute_percentage_error)
-from src.models.my_models.Annalisa import Annalisa
+from pigment_retrieval.models.my_models.Annalisa import Annalisa
 
 annalisa = Annalisa()
 logging.basicConfig(level=logging.INFO)

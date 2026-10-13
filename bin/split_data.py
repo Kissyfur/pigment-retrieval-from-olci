@@ -4,7 +4,7 @@ import pandas as pd
 import pickle
 
 from pathlib import Path
-from src.data.data_spliting import create_splits, load_split
+from pigment_retrieval.data.data_spliting import create_splits, load_split
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
 

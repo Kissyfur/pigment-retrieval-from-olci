@@ -7,18 +7,24 @@ import xarray as xr
 from pathlib import Path
 
 MODEL_NAMES = ['concatenatedCNN', 'cnn', 'concatenatedDNN', 'dnn', 'concatenatedBiLSTM', 'bilstm', 'rf', 'xgb']
+# Folder with the experiment configs and the trained models: the repository, or the copy installed with the package
+ROOT = Path(__file__).resolve().parents[2]
+if not (ROOT / 'experiments_config').is_dir():
+    ROOT = Path(__file__).resolve().parents[1] / 'trained'
 
 
-def available_models(configs_dir='experiments_config'):
+def available_models(configs_dir=ROOT / 'experiments_config'):
     """Trained models that can predict, as {'<experiment>/<model>': (experiment config, splits with the model)}."""
+    if not Path(configs_dir).is_dir():
+        raise FileNotFoundError(f'{configs_dir} not found')
     models = {}
     for path_config in sorted(Path(configs_dir).glob('*.json'), key=str):
         with open(path_config, 'r') as f:
             exp_config = json.load(f)
         for model_name in MODEL_NAMES:
             splits = [split for split in range(exp_config['N'])
-                      if any(Path(exp_config['EXP_NAME'], f'split_{split}', 'models').glob(f'{model_name}.*'))
-                      and Path(exp_config['SPLITS_PATH'], f'split_{split}', 'scaler_y.pkl').exists()]
+                      if any(Path(ROOT, exp_config['EXP_NAME'], f'split_{split}', 'models').glob(f'{model_name}.*'))
+                      and Path(ROOT, exp_config['SPLITS_PATH'], f'split_{split}', 'scaler_y.pkl').exists()]
             if splits:
                 models[f'{Path(exp_config["EXP_NAME"]).name}/{model_name}'] = exp_config, splits
     return models
@@ -29,7 +35,7 @@ class Predictor:
 
     def __init__(self, model='OLCI_sat_ft/concatenatedCNN'):
         # Imported here so that listing the available models does not load TensorFlow
-        from src.models.model_training import class_instance_factory
+        from pigment_retrieval.models.model_training import class_instance_factory
 
         models = available_models()
         if model not in models:
@@ -39,9 +45,9 @@ class Predictor:
         self.models, self.scalers = [], []
         for split in splits:
             mod_ = class_instance_factory(model.split('/')[1])
-            mod_.load(Path(exp_config['EXP_NAME'], f'split_{split}', 'models'))
+            mod_.load(Path(ROOT, exp_config['EXP_NAME'], f'split_{split}', 'models'))
             self.models.append(mod_)
-            with open(Path(exp_config['SPLITS_PATH'], f'split_{split}', 'scaler_y.pkl'), 'rb') as f:
+            with open(Path(ROOT, exp_config['SPLITS_PATH'], f'split_{split}', 'scaler_y.pkl'), 'rb') as f:
                 self.scalers.append(pickle.load(f))
 
     def predict(self, data, logged=False, floor_quantile=None):

@@ -2,9 +2,9 @@ import pandas as pd
 import pickle
 
 from tqdm import tqdm
-from src.data.data_utils import augment_data
-from src.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
-from src.models.sklearn_models import RandomForestModel, XGBModel
+from pigment_retrieval.data.data_utils import augment_data
+from pigment_retrieval.models.keras_models import ConcatenatedModulesModel, ConvolutionalModel, DenseModel, BilstmModel
+from pigment_retrieval.models.sklearn_models import RandomForestModel, XGBModel
 
 def class_instance_factory(model_name):
     if model_name == 'rf':

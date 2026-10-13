@@ -147,24 +147,39 @@ The models were trained with in situ radiometry from European waters (Mediterran
 English Channel), and the `_sat_ft` models were then fine-tuned with satellite matchups. See the paper for the accuracy
 of each model, and expect it to be lower in waters unlike those.
 
-### Use from Python
+### Use it from another project
 
-From the repository folder, the predictions can also be computed for a pandas DataFrame or an xarray Dataset:
+The code and the trained models are the Python package `pigment_retrieval`, which you can install from GitHub in the
+environment of any project (Python 3.9 to 3.11), without downloading this repository:
+
+```bash
+pip install git+https://github.com/Kissyfur/pigment-retrieval-from-olci.git
+```
+
+Then predict with the `predict-pigments` command, which has the same options as `bin/predict.py`:
+
+```bash
+predict-pigments --data my_data.csv
+```
+
+or from your Python code, for a pandas DataFrame or an xarray Dataset with one column or variable per band:
 
 ```python
 import xarray as xr
-from src.predict.predict import Predictor
+from pigment_retrieval.predict.predict import Predictor
 
 predictor = Predictor('OLCI_sat_ft/concatenatedCNN')
 pigments = predictor.predict(xr.open_dataset('my_image.nc'))  # an xarray Dataset with the dimensions of the image
 ```
+
+To update the package to the latest version on GitHub, add `--force-reinstall --no-deps` to the `pip install` command.
 
 ## Repository structure
 
 | Folder                   | Content                                                                                              |
 |--------------------------|------------------------------------------------------------------------------------------------------|
 | `bin/`                   | Command line scripts: `predict.py` (this guide), `split_data.py`, `run_pipeline.py` and `run_all.py` |
-| `src/`                   | Data processing, models, metrics, SHAP analysis and prediction code                                  |
+| `pigment_retrieval/`     | Python package: data processing, models, metrics, SHAP analysis and prediction code                  |
 | `experiments_config/`    | Definition of each experiment: datasets, bands, pigments, splits and models                          |
 | `hyperparameter_spaces/` | Hyperparameters of the models of each experiment                                                     |
 | `experiments/`           | For each experiment and split: train/test samples, scaler of the pigments, trained models, metrics   |

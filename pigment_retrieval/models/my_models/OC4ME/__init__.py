@@ -1,4 +1,4 @@
-from src.models.my_models import Model
+from pigment_retrieval.models.my_models import Model
 import numpy as np
 
 

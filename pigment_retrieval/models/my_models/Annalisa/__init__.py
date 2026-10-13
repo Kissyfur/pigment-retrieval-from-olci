@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.models import BaseModel
+from pigment_retrieval.models import BaseModel
 import numpy as np
 
 
